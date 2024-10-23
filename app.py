@@ -1,6 +1,6 @@
 import json
 from flask import Flask, request, jsonify, session
-from models import User, Product, Order db
+from models import User, Product, Order, db
 from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, \
                                unset_jwt_cookies, jwt_required, JWTManager
 
@@ -44,16 +44,20 @@ def register():
     return jsonify({'message': 'User registered successfully!'}), 201
 
 @app.route("/logout", methods=["POST"])
+@jwt_required()
 def logout():
     response = jsonify({"msg": "logout successful"})
     unset_jwt_cookies(response)
     return response, 200
 
-# The following endpoints are for managing and filtering of products.
 
+
+####################################################################
+# The following endpoints are for managing and filtering of products.
 
 # This is the endpoint to add some product to the product table
 @app.route("/add_product", methods=["POST"])
+@jwt_required()
 def add_product():
 
     data = request.get_json()
@@ -71,6 +75,7 @@ def add_product():
 
 #This endpoint is used for editing product
 @app.route("/edit_product", methods=["PUT"])
+@jwt_required()
 def edit_product():
     data = request.get_json()
     product_name = data.get('name')
@@ -93,7 +98,42 @@ def edit_product():
 
     return jsonify({'message': 'Product Updated Successfully'}), 200
 
+# This endpoint is used to get a product
+@app.route("/get_product", methods=["GET"])
+def get_product():
+    data = request.get_json()
+    name = data.get('name')
+    product = Product.query.filter_by(name=name).first()
 
+    return jsonify({"name":product.name, "price": product.price, "description": product.description, "quantity": product.quantity, "image_url": product.image_url}), 200
+#####################
+
+
+# The following endpoints are for managing and filtering of orders.
+@app.route("/add_order", methods=["POST"])
+@jwt_required()
+def add_Order():
+
+    data = request.get_json()
+    user_id = data.get('user_id')
+    product_id = data.get('product_id')
+    shipping_address = data.get('shipping_address')
+
+    new_order = Product(user_id=user_id, product_id=product_id, shipping_address=shipping_address)
+    db.session.add(new_order)
+    db.session.commit()
+
+    return jsonify({'message': 'Order Created Successfully'}), 200
+
+# This endpoint is used to get an order
+@app.route("/get_order", methods=["GET"])
+@jwt_required()
+def get_order():
+    data = request.get_json()
+    order_id = data.get('order_id')
+    order = Order.query.filter_by(id=order_id).first()
+
+    return jsonify({"user_id": order.user_id, "product_id": order.product_id, "shipping_address": order.shipping_address}), 200
 
 
 if __name__ == "__main__":

@@ -26,4 +26,4 @@ class Order(db.Model):
     id = db.Column(db.String(32), primary_key=True, unique=True, default=get_uuid)
     user_id = db.Column(db.String(32), nullable=False)
     product_id = db.Column(db.String(32), nullable=False)
-    shipping_address = description = db.Column(db.Text, nullable=False)
+    shipping_address = db.Column(db.Text, nullable=False)
