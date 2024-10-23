@@ -12,19 +12,23 @@ jwt = JWTManager(app)
 
 db.init_app(app)
 
+# The following route are the authentication route for the application
 @app.route('/login', methods=["POST"])
 def create_token():
     email = request.json.get("email", None)
     password = request.json.get("password", None)
-    if email != "test" or password != "test":
-        return {"msg": "Wrong email or password"}, 401
 
-    access_token = create_access_token(identity=email)
-    response = {"access_token": access_token}
-    return response, 200
+    if User.query.filter_by(email=email).first():
+        access_token = create_access_token(identity=email)
+        response = {"access_token": access_token, "message": "Login SuccessFully"}
+        return response, 200
+
+    return {"msg": "Wrong email or password"}, 401
 
 @app.route('/signup', methods=["POST"])
 def register():
+
+    db.create_all()
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
@@ -32,15 +36,12 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({'message': 'Email already exists'}), 400
 
+    new_user = User(email=email, password=password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    access_token = create_access_token(identity=email)
     return jsonify({'message': 'User registered successfully!'}), 201
-
-    # new_user = User(email=email, password=password)
-    # db.session.add(new_user)
-    # db.session.commit()
-
-    # # access_token = create_access_token(identity=email)
-    # return jsonify({'message': 'User registered successfully!'}), 201
-
 
 @app.route("/logout", methods=["POST"])
 def logout():
