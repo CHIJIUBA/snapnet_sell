@@ -52,7 +52,7 @@ def logout():
 
 
 
-####################################################################
+############################################################################################
 # The following endpoints are for managing and filtering of products.
 
 # This is the endpoint to add some product to the product table
@@ -100,15 +100,17 @@ def edit_product():
 
 # This endpoint is used to get a product
 @app.route("/get_product", methods=["GET"])
+@jwt_required()
 def get_product():
     data = request.get_json()
     name = data.get('name')
     product = Product.query.filter_by(name=name).first()
 
     return jsonify({"name":product.name, "price": product.price, "description": product.description, "quantity": product.quantity, "image_url": product.image_url}), 200
-#####################
+############################################################################################
 
 
+############################################################################################
 # The following endpoints are for managing and filtering of orders.
 @app.route("/add_order", methods=["POST"])
 @jwt_required()
