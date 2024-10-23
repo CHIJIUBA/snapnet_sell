@@ -1,6 +1,6 @@
 import json
 from flask import Flask, request, jsonify, session
-from models import User, db
+from models import User, Product, db
 from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, \
                                unset_jwt_cookies, jwt_required, JWTManager
 
@@ -48,6 +48,52 @@ def logout():
     response = jsonify({"msg": "logout successful"})
     unset_jwt_cookies(response)
     return response, 200
+
+# The following endpoints are for managing and filtering of products.
+
+
+# This is the endpoint to add some product to the product table
+@app.route("/add_product", methods=["POST"])
+def add_product():
+
+    data = request.get_json()
+    name = data.get('name')
+    price = data.get('price')
+    description = data.get('description')
+    quantity = data.get('quantity')
+    image_url = data.get('image_url')
+
+    new_product = Product(name=name, price=price, description=description, quantity=quantity, image_url=image_url)
+    db.session.add(new_product)
+    db.session.commit()
+
+    return jsonify({'message': 'Product Created Successfully'}), 201
+
+#This endpoint is used for editing product
+@app.route("/edit_product", methods=["PUT"])
+def edit_product():
+    data = request.get_json()
+    product_name = data.get('name')
+    name = data.get('name')
+    price = data.get('price')
+    description = data.get('description')
+    quantity = data.get('quantity')
+    image_url = data.get('image_url')
+
+    product = Product.query.filter_by(name=name).first()
+
+    product.name = name
+    product.price = price
+    product.description = description
+    product.quantity = quantity
+    product.image_url = image_url
+
+    db.session.add(product)
+    db.session.commit()
+
+    return jsonify({'message': 'Product Updated Successfully'}), 200
+
+
 
 
 if __name__ == "__main__":
